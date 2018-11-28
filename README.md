@@ -100,13 +100,13 @@ Percentage of the requests served within a certain time (ms)
  
  
 #### wrk -t8 -c200 -d30s --timeout 2s http://localhost:80
-Running 30s test @ http://localhost:80
-  8 threads and 200 connections
-  Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency    30.67ms  122.48ms   1.67s    96.81%
-    Req/Sec   123.69    147.89   831.00     86.09%
-  17731 requests in 30.08s, 2.47MB read
-  Socket errors: connect 0, read 17960, write 0, timeout 5
-  Non-2xx or 3xx responses: 17731
-Requests/sec:    589.53
-Transfer/sec:     84.05KB
+Running 30s test @ http://localhost:80  
+  8 threads and 200 connections  
+  Thread Stats   Avg      Stdev     Max   +/- Stdev  
+    Latency    30.67ms  122.48ms   1.67s    96.81%  
+    Req/Sec   123.69    147.89   831.00     86.09%  
+  17731 requests in 30.08s, 2.47MB read  
+  Socket errors: connect 0, read 17960, write 0, timeout 5  
+  Non-2xx or 3xx responses: 17731  
+Requests/sec:    589.53  
+Transfer/sec:     84.05KB  
