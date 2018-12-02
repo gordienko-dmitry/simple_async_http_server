@@ -12,7 +12,7 @@
 
 
 #### TESTS
-httptest.py  
+#### httptest.py  
 directory index file exists ... ok  
 document root escaping forbidden ... ok  
 Send bad http headers ... ok  
@@ -35,7 +35,7 @@ directory index file absent ... ok
 large file downloaded correctly ... ok  
 post method forbidden ... ok  
 Server header exists ... ok  
-----------------------------------------------------------------------
+
 Ran 22 tests in 0.292s  
 
 OK

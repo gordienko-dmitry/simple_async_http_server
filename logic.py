@@ -1,12 +1,12 @@
 import logging
 import re
 from datetime import datetime
-import const
 import os
 from httpd import OK, NOT_FOUND, FORBIDDEN, BAD_METHOD
 from collections import namedtuple
 from urllib.parse import unquote
 
+SERVER_NAME = "genZ"
 
 CONTENT_TYPE = {
     ".html": "text/html",    
@@ -25,7 +25,7 @@ def get_headers(length=0, c_type=""):
     """make headers for response"""
     headers = {}
     headers["Date"] = datetime.strftime(datetime.utcnow(), "%a, %d %b %Y %H:%M:%S GMT")
-    headers["Server"] = const.SERVER_NAME
+    headers["Server"] = SERVER_NAME
     headers["Content-Length"] = length
     headers["Content-Type"] = c_type
     headers["Connection"] = "keep-alive"
@@ -45,12 +45,12 @@ def get_response_with_body(url, r, method):
         return NOT_FOUND, method, get_headers(), b""
 
     try:
-        f = open(r + os.sep + url, "rb")
+        f = open(os.path.join(r, url), "rb")
         body = f.read()
         f.close()
         return OK, method, get_headers(len(body), c_type), body
     except IOError:
-        logging.error("error in reading file {}".format(r + os.sep + url))
+        logging.error("error in reading file {}".format(os.path.join(r, url)))
         return NOT_FOUND, method, get_headers(), b""
 
 
@@ -62,7 +62,7 @@ def get_response(data_b, document_root):
     head, _ = re.split("\r\n\r\n", data, 1)
 
     headers_list = head.split("\r\n")
-    matches = re.match("(GET|HEAD)\s*([^\s\?]+)", headers_list.pop(0))
+    matches = re.match("(GET|HEAD)\s*\/?([^\s\?]+)", headers_list.pop(0))
 
     if matches is None:
         return ResponseTuple(BAD_METHOD, "", get_headers(), b"")

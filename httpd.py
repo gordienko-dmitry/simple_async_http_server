@@ -4,6 +4,7 @@ import socket
 import multiprocessing
 import select
 import logic
+import os
 
 
 OK = 200
@@ -76,11 +77,12 @@ class AsyncServer(object):
                             pass
                     elif event & select.EPOLLIN:
                         try:
-                            while True:
-                                r = self._connections[fileno].recv(1024)
-                                if not r:
-                                    raise socket.error
-                                self._requests[fileno] += r
+                            #while True:
+                            r = self._connections[fileno].recv(1024)
+                            if not r:
+                                raise socket.error
+                            self._requests[fileno] += r
+                            #epoll.register(self._connections[fileno], select.EPOLLIN | select.EPOLLET)
                         except socket.error:
                             pass
                         if EOL1 in self._requests[fileno] or EOL2 in self._requests[fileno]:
@@ -90,9 +92,10 @@ class AsyncServer(object):
 
                     elif event & select.EPOLLOUT:
                         try:
-                            while len(self._responses[fileno]) > 0:
-                                byteswritten = self._connections[fileno].send(self._responses[fileno])
-                                self._responses[fileno] = self._responses[fileno][byteswritten:]                            
+                            #while len(self._responses[fileno]) > 0:
+                            byteswritten = self._connections[fileno].send(self._responses[fileno])
+                            self._responses[fileno] = self._responses[fileno][byteswritten:]
+                            #epoll.register(self._connections[fileno], select.EPOLLOUT | select.EPOLLET)
                         except socket.error:
                             pass
                         if len(self._responses[fileno]) == 0:
