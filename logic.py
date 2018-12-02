@@ -45,9 +45,8 @@ def get_response_with_body(url, r, method):
         return NOT_FOUND, method, get_headers(), b""
 
     try:
-        f = open(os.path.join(r, url), "rb")
-        body = f.read()
-        f.close()
+        with open(os.path.join(r, url), "rb") as f:
+            body = f.read()
         return OK, method, get_headers(len(body), c_type), body
     except IOError:
         logging.error("error in reading file {}".format(os.path.join(r, url)))
