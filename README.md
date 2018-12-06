@@ -13,6 +13,7 @@
 
 #### TESTS
 #### httptest.py  
+```   
 directory index file exists ... ok  
 document root escaping forbidden ... ok  
 Send bad http headers ... ok  
@@ -38,10 +39,12 @@ Server header exists ... ok
 
 Ran 22 tests in 0.292s  
 
-OK
+OK  
+```
 
 
 #### ab -n 50000 -c 100 -r http://localhost:8080/
+```
 This is ApacheBench, Version 2.3 <$Revision: 1430300 $>
 Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
 Licensed to The Apache Software Foundation, http://www.apache.org/
@@ -97,9 +100,10 @@ Percentage of the requests served within a certain time (ms)
   98%      0  
   99%      0  
  100%     11 (longest request)  
- 
+ ```
  
 #### wrk -t8 -c200 -d30s --timeout 2s http://localhost:80
+```
 Running 30s test @ http://localhost:80  
   8 threads and 200 connections  
   Thread Stats   Avg      Stdev     Max   +/- Stdev  
@@ -110,3 +114,4 @@ Running 30s test @ http://localhost:80
   Non-2xx or 3xx responses: 17731  
 Requests/sec:    589.53  
 Transfer/sec:     84.05KB  
+```
