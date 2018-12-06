@@ -49,6 +49,47 @@ class AsyncServer(object):
         tuple_data = logic.get_response(request, self.document_root)
         return self._headers_body_to_package_(tuple_data)
 
+    def _register_new_connection(self, server_socket, epoll):
+        try:
+            while True:
+                connection, address = server_socket.accept()
+                connection.setblocking(0)
+                epoll.register(connection.fileno(), select.EPOLLIN | select.EPOLLET)
+                self._connections[connection.fileno()] = connection
+                self._requests[connection.fileno()] = b''
+                self._responses[connection.fileno()] = b''
+        except socket.error:
+            pass
+
+    def _receive_msg(self, fileno, epoll):
+        try:
+            r = self._connections[fileno].recv(1024)
+            if not r:
+                raise socket.error
+            self._requests[fileno] += r
+        except socket.error:
+            pass
+
+        if EOL1 in self._requests[fileno] or EOL2 in self._requests[fileno]:
+            self._responses[fileno] = self._get_response_(self._requests[fileno])
+            epoll.modify(fileno, select.EPOLLOUT | select.EPOLLET)
+            logging.info("from {} recieve package {}".format(fileno, self._requests[fileno][:250]))
+
+    def _send_msg(self, fileno, epoll):
+        try:
+            byteswritten = self._connections[fileno].send(self._responses[fileno])
+            self._responses[fileno] = self._responses[fileno][byteswritten:]
+        except socket.error:
+            pass
+        if len(self._responses[fileno]) == 0:
+            epoll.modify(fileno, select.EPOLLET)
+            self._connections[fileno].shutdown(socket.SHUT_RDWR)
+
+    def _close_descr(self, fileno, epoll):
+        epoll.unregister(fileno)
+        self._connections[fileno].close()
+        del self._connections[fileno]
+
     def run_event_loop(self):
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -65,42 +106,13 @@ class AsyncServer(object):
                 events = epoll.poll(1)
                 for fileno, event in events:
                     if fileno == server_socket.fileno():
-                        try:
-                            while True:
-                                connection, address = server_socket.accept()
-                                connection.setblocking( 0)
-                                epoll.register(connection.fileno(), select.EPOLLIN | select.EPOLLET)
-                                self._connections[connection.fileno()] = connection
-                                self._requests[connection.fileno()] = b''
-                                self._responses[connection.fileno()] = b''
-                        except socket.error:
-                            pass
+                        self._register_new_connection(epoll)
                     elif event & select.EPOLLIN:
-                        try:
-                            r = self._connections[fileno].recv(1024)
-                            if not r:
-                                raise socket.error
-                            self._requests[fileno] += r
-                        except socket.error:
-                            pass
-                        if EOL1 in self._requests[fileno] or EOL2 in self._requests[fileno]:
-                            self._responses[fileno] = self._get_response_(self._requests[fileno])
-                            epoll.modify(fileno, select.EPOLLOUT | select.EPOLLET)
-                            logging.info("from {} recieve package {}".format(fileno, self._requests[fileno][:250]))
-
+                        self._receive_msg(fileno, epoll)
                     elif event & select.EPOLLOUT:
-                        try:
-                            byteswritten = self._connections[fileno].send(self._responses[fileno])
-                            self._responses[fileno] = self._responses[fileno][byteswritten:]
-                        except socket.error:
-                            pass
-                        if len(self._responses[fileno]) == 0:
-                            epoll.modify(fileno, select.EPOLLET)
-                            self._connections[fileno].shutdown(socket.SHUT_RDWR)
+                        self._send_msg(fileno, epoll)
                     elif event & select.EPOLLHUP:
-                        epoll.unregister(fileno)
-                        self._connections[fileno].close()
-                        del self._connections[fileno]
+                        self._close_descr(fileno, epoll)
         except Exception as e:
             logging.error("Error in event loop: {}".format(e))
         finally:

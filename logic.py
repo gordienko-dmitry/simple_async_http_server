@@ -68,14 +68,9 @@ def get_response(data_b, document_root):
 
     method, url = matches.groups()
 
-    # Now headers not used, but who know
-    #headers = {}
-    #for v in headers_list:
-    #    (name, value) = re.split('\s*:\s*', v, 1)
-    #    headers[name] = value
-
     url = unquote(url)
-    if re. match("../", url):
+    document_full = os.path.abspath(document_root)
+    if not os.path.abspath(url).startswith(document_full):
         return ResponseTuple(FORBIDDEN, method, get_headers(), b"")
 
     return ResponseTuple(*get_response_with_body(url, document_root, method))
