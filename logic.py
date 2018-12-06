@@ -32,7 +32,7 @@ def get_headers(length=0, c_type=""):
     return headers
 
 
-def get_response_with_body(url, r, method):
+def get_response_with_body(url, method):
     """getting request with body"""
     if url.endswith("/"):
         url += "index.html"
@@ -45,7 +45,7 @@ def get_response_with_body(url, r, method):
         return NOT_FOUND, method, get_headers(), b""
 
     try:
-        with open(os.path.join(r, url), "rb") as f:
+        with open(url, "rb") as f:
             body = f.read()
         return OK, method, get_headers(len(body), c_type), body
     except IOError:
@@ -70,7 +70,9 @@ def get_response(data_b, document_root):
 
     url = unquote(url)
     document_full = os.path.abspath(document_root)
-    if not os.path.abspath(url).startswith(document_full):
+    full_url = os.path.abspath(url)
+    full_url = os.path.join(document_full, full_url)
+    if not full_url.startswith(document_full):
         return ResponseTuple(FORBIDDEN, method, get_headers(), b"")
 
-    return ResponseTuple(*get_response_with_body(url, document_root, method))
+    return ResponseTuple(*get_response_with_body(full_url, method))
