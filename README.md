@@ -1,14 +1,18 @@
 ### There is mini-server with HEAD & GET methods  
 
-#### Files
+Need: Web-server, with some http usefull. Load testing new system.  
+For me it was async server with epoll events on unix system.   
+
+#### Files  
+
+server/
+
 **httpd.py** - entry point  
 *Server code - read events, receive packages and sending answer*
 
 
 **logic.py**  
 *get request and return response & code for it*
-
-**IT's working on server now, can use on**   http://109.94.208.27/httptest/wikipedia_russia.html
 
 
 #### TESTS
